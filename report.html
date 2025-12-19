@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Zodiac Model Raporu</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f8f8fa; }
+        h1 { color: #333; }
+        table { border-collapse: collapse; width: 60%; margin-top: 20px; }
+        th, td { border: 1px solid #bbb; padding: 8px 12px; text-align: center; }
+        th { background: #e0e0e0; }
+        .ok { color: green; font-weight: bold; }
+        .fail { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Model Doğruluk Raporu</h1>
+    <div id="report"></div>
+    <script>
+    async function fetchReport() {
+        const response = await fetch('/model_report');
+        const data = await response.json();
+        let html = `<table><tr><th>Model</th><th>Doğru Tahmin (%)</th><th>Toplam</th><th>Doğru</th><th>Yanlış</th></tr>`;
+        for (const model of ['logistic', 'rf', 'knn']) {
+            const r = data[model];
+            html += `<tr><td>${model.toUpperCase()}</td><td>${(r.accuracy*100).toFixed(1)}</td><td>${r.total}</td><td class='ok'>${r.correct}</td><td class='fail'>${r.incorrect}</td></tr>`;
+        }
+        html += '</table>';
+        document.getElementById('report').innerHTML = html;
+    }
+    fetchReport();
+    </script>
+</body>
+</html>

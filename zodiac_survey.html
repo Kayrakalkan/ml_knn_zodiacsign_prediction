@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burç Özellikleri Anketi</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
+        .container { max-width: 500px; margin: 40px auto; background: #fff; padding: 30px 40px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        h2 { text-align: center; color: #333; }
+        label { display: block; margin: 18px 0 6px; color: #222; }
+        select, input[type=radio] { margin-right: 8px; }
+        .question { margin-bottom: 18px; }
+        .submit-btn { width: 100%; background: #4a90e2; color: #fff; border: none; padding: 12px; border-radius: 6px; font-size: 1.1em; cursor: pointer; margin-top: 18px; }
+        .submit-btn:hover { background: #357ab8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="text-align:right; margin-bottom:10px;">
+            <label for="langSelect" style="font-size:0.95em;">Dil / Language:</label>
+            <select id="langSelect">
+                <option value="tr">Türkçe</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+        <h2 id="formTitle">Burç Özellikleri Anketi</h2>
+        <form id="zodiacForm">
+            <div id="step1"></div>
+            <div id="step2" style="display:none;">
+                <div id="predictionResult" style="margin-bottom:18px;"></div>
+                <div class="question">
+                    <label id="trueZodiacLabel">Gerçek burcunuzu seçiniz:</label>
+                    <select name="true_zodiac" id="trueZodiacSelect" required></select>
+                </div>
+                <button type="submit" class="submit-btn" id="saveBtn">Veriyi Kaydet</button>
+            </div>
+        </form>
+    <div id="result" style="margin-top:20px;"></div>
+    </div>
+    <script>
+    // Dil desteği: Türkçe ve İngilizce metinler
+    const LANG = {
+        tr: {
+            formTitle: "Burç Özellikleri Anketi",
+            questions: [
+                "1. Risk almayı severim.",
+                "2. Duygularımla hareket ederim.",
+                "3. Liderlik etmeyi severim.",
+                "4. Planlı ve düzenliyim.",
+                "5. İnsanlarla kolay iletişim kurarım.",
+                "6. Sabırlıyımdır.",
+                "7. Plan iptali beni rahatsız eder.",
+                "8. Tartışmada geri çekilirim.",
+                "9. Konuşmayı ben başlatırım.",
+                "10. Kontrol bende olmazsa huzursuz olurum."
+            ],
+            options: ["Seçiniz", "1 - Çok Düşük", "2 - Düşük", "3 - Orta", "4 - Yüksek", "5 - Çok Yüksek"],
+            predictBtn: "Tahmin Et",
+            trueZodiacLabel: "Gerçek burcunuzu seçiniz:",
+            zodiacOptions: [
+                ["Aries", "Koç"], ["Taurus", "Boğa"], ["Gemini", "İkizler"], ["Cancer", "Yengeç"],
+                ["Leo", "Aslan"], ["Virgo", "Başak"], ["Libra", "Terazi"], ["Scorpio", "Akrep"],
+                ["Sagittarius", "Yay"], ["Capricorn", "Oğlak"], ["Aquarius", "Kova"], ["Pisces", "Balık"]
+            ],
+            saveBtn: "Veriyi Kaydet",
+            resultSuccess: "<b>Teşekkürler! Veriniz kaydedildi.</b>",
+            resultError: "<b>Bir hata oluştu. Lütfen tekrar deneyin.</b>",
+            resultServer: "<b>Sunucuya ulaşılamıyor.</b>",
+            modelA: "A Modeli (Logistic)",
+            modelB: "B Modeli (RF)",
+            modelC: "C Modeli (KNN)",
+            modelNone: "Model yok"
+        },
+        en: {
+            formTitle: "Zodiac Traits Survey",
+            questions: [
+                "1. I like taking risks.",
+                "2. I act with my emotions.",
+                "3. I like to lead.",
+                "4. I am organized and planned.",
+                "5. I easily communicate with people.",
+                "6. I am patient.",
+                "7. I get disturbed by plan cancellations.",
+                "8. I withdraw in arguments.",
+                "9. I initiate conversations.",
+                "10. I feel uneasy if I am not in control."
+            ],
+            options: ["Select", "1 - Very Low", "2 - Low", "3 - Medium", "4 - High", "5 - Very High"],
+            predictBtn: "Predict",
+            trueZodiacLabel: "Select your real zodiac:",
+            zodiacOptions: [
+                ["Aries", "Aries"], ["Taurus", "Taurus"], ["Gemini", "Gemini"], ["Cancer", "Cancer"],
+                ["Leo", "Leo"], ["Virgo", "Virgo"], ["Libra", "Libra"], ["Scorpio", "Scorpio"],
+                ["Sagittarius", "Sagittarius"], ["Capricorn", "Capricorn"], ["Aquarius", "Aquarius"], ["Pisces", "Pisces"]
+            ],
+            saveBtn: "Save Data",
+            resultSuccess: "<b>Thank you! Your data has been saved.</b>",
+            resultError: "<b>An error occurred. Please try again.</b>",
+            resultServer: "<b>Cannot reach server.</b>",
+            modelA: "Model A (Logistic)",
+            modelB: "Model B (RF)",
+            modelC: "Model C (KNN)",
+            modelNone: "No model"
+        }
+    };
+
+    let currentLang = 'tr';
+
+    function renderQuestions() {
+        const q = LANG[currentLang];
+        let html = '';
+        for (let i = 0; i < q.questions.length; i++) {
+            html += `<div class="question"><label>${q.questions[i]}</label><select name="${Object.keys(FEATURE_KEYS)[i]}" required>`;
+            for (let j = 0; j < q.options.length; j++) {
+                html += `<option value="${j === 0 ? '' : j}">${q.options[j]}</option>`;
+            }
+            html += `</select></div>`;
+        }
+        html += `<button type="button" class="submit-btn" id="predictBtn">${q.predictBtn}</button>`;
+        document.getElementById('step1').innerHTML = html;
+    }
+
+    function renderZodiacOptions() {
+        const q = LANG[currentLang];
+        const select = document.getElementById('trueZodiacSelect');
+        select.innerHTML = '';
+        select.innerHTML += `<option value="">${q.options[0]}</option>`;
+        for (const [val, label] of q.zodiacOptions) {
+            select.innerHTML += `<option value="${val}">${label}</option>`;
+        }
+    }
+
+    function updateLangUI() {
+        const q = LANG[currentLang];
+        document.getElementById('formTitle').innerText = q.formTitle;
+        renderQuestions();
+        document.getElementById('trueZodiacLabel').innerText = q.trueZodiacLabel;
+        renderZodiacOptions();
+        document.getElementById('saveBtn').innerText = q.saveBtn;
+    }
+
+    // Özellik anahtarları
+    const FEATURE_KEYS = {
+        risk_taking: 1,
+        emotionality: 2,
+        leadership: 3,
+        organization: 4,
+        sociability: 5,
+        patience: 6,
+        flexibility: 7,
+        conflict_avoidance: 8,
+        social_initiative: 9,
+        control_need: 10
+    };
+
+    // Dil seçimi değiştiğinde arayüzü güncelle
+    document.getElementById('langSelect').onchange = function() {
+        currentLang = this.value;
+        updateLangUI();
+    };
+
+    // Sayfa yüklendiğinde başlat
+    window.onload = function() {
+        updateLangUI();
+    };
+
+    // Tahmin butonuna basınca özellikleri topla ve /predict_all endpointine gönder
+    document.addEventListener('click', async function(e) {
+        if (e.target && e.target.id === 'predictBtn') {
+            const form = document.getElementById('zodiacForm');
+            const data = {};
+            for (const key in FEATURE_KEYS) {
+                data[key] = parseInt(form[key].value);
+            }
+            try {
+                const response = await fetch('http://127.0.0.1:5000/predict_all', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result) {
+                    document.getElementById('step1').style.display = 'none';
+                    document.getElementById('step2').style.display = 'block';
+                    // Show all model predictions (top-1 only)
+                    let html = '';
+                    const q = LANG[currentLang];
+                    html += `<b>${q.modelA}:</b> ${result.logistic ? result.logistic : q.modelNone}<br>`;
+                    html += `<b>${q.modelB}:</b> ${result.rf ? result.rf : q.modelNone}<br>`;
+                    html += `<b>${q.modelC}:</b> ${result.knn ? result.knn : q.modelNone}<br>`;
+                    document.getElementById('predictionResult').innerHTML = html;
+                    // Store predictions for submit
+                    form.dataset.logistic = result.logistic || '';
+                    form.dataset.rf = result.rf || '';
+                    form.dataset.knn = result.knn || '';
+                } else {
+                    document.getElementById('result').innerHTML = LANG[currentLang].resultError;
+                }
+            } catch (err) {
+                document.getElementById('result').innerHTML = LANG[currentLang].resultServer;
+            }
+        }
+    });
+
+    // Veriyi kaydetme
+    document.getElementById('zodiacForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = {};
+        for (const key in FEATURE_KEYS) {
+            data[key] = parseInt(form[key].value);
+        }
+        data.pred_logistic = form.dataset.logistic;
+        data.pred_rf = form.dataset.rf;
+        data.pred_knn = form.dataset.knn;
+        data.true_zodiac = form.true_zodiac.value;
+        try {
+            const response = await fetch('http://127.0.0.1:5000/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (response.ok) {
+                document.getElementById('result').innerHTML = LANG[currentLang].resultSuccess;
+                document.getElementById('step2').style.display = 'none';
+            } else {
+                document.getElementById('result').innerHTML = LANG[currentLang].resultError;
+            }
+        } catch (err) {
+            document.getElementById('result').innerHTML = LANG[currentLang].resultServer;
+        }
+    };
+    </script>
+</body>
+</html>

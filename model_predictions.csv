@@ -1,0 +1,7 @@
+risk_taking,emotionality,leadership,organization,sociability,patience,flexibility,conflict_avoidance,social_initiative,control_need,logistic_pred,rf_pred,knn_pred,true_zodiac,timestamp
+2,4,3,3,2,3,4,4,3,2,Cancer,Pisces,Pisces,Pisces,2025-12-19T01:35:09.341237
+2,2,3,3,4,2,5,3,4,3,Gemini,Gemini,Gemini,Gemini,2025-12-19T01:44:22.615850
+3,3,5,3,3,3,2,2,4,5,Aries,Capricorn,Scorpio,Scorpio,2025-12-19T01:49:29.797086
+3,3,5,3,3,3,2,2,4,5,Aries,Capricorn,Scorpio,Scorpio,2025-12-19T01:53:01.964012
+3,2,4,2,4,2,2,1,4,5,Aries,Aries,Leo,Leo,2025-12-19T01:53:50.559175
+3,3,3,3,4,4,4,4,3,3,Aquarius,Aquarius,Libra,Libra,2025-12-19T02:17:52.652551
