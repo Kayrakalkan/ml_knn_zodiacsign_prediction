@@ -174,7 +174,7 @@
                 data[key] = parseInt(form[key].value);
             }
             try {
-                const response = await fetch('http://127.0.0.1:5000/predict_all', {
+                const response = await fetch('/predict_all', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -216,7 +216,7 @@
         data.pred_knn = form.dataset.knn;
         data.true_zodiac = form.true_zodiac.value;
         try {
-            const response = await fetch('http://127.0.0.1:5000/submit', {
+            const response = await fetch('/submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
