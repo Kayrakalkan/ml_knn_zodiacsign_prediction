@@ -13,6 +13,9 @@
         .question { margin-bottom: 18px; }
         .submit-btn { width: 100%; background: #4a90e2; color: #fff; border: none; padding: 12px; border-radius: 6px; font-size: 1.1em; cursor: pointer; margin-top: 18px; }
         .submit-btn:hover { background: #357ab8; }
+        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 0.8s linear infinite; margin-left: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -57,6 +60,7 @@
             ],
             options: ["Seçiniz", "1 - Çok Düşük", "2 - Düşük", "3 - Orta", "4 - Yüksek", "5 - Çok Yüksek"],
             predictBtn: "Tahmin Et",
+            predicting: "Tahmin ediliyor...",
             trueZodiacLabel: "Gerçek burcunuzu seçiniz:",
             zodiacOptions: [
                 ["Aries", "Koç"], ["Taurus", "Boğa"], ["Gemini", "İkizler"], ["Cancer", "Yengeç"],
@@ -64,6 +68,7 @@
                 ["Sagittarius", "Yay"], ["Capricorn", "Oğlak"], ["Aquarius", "Kova"], ["Pisces", "Balık"]
             ],
             saveBtn: "Veriyi Kaydet",
+            saving: "Kaydediliyor...",
             resultSuccess: "<b>Teşekkürler! Veriniz kaydedildi.</b>",
             resultError: "<b>Bir hata oluştu. Lütfen tekrar deneyin.</b>",
             resultServer: "<b>Sunucuya ulaşılamıyor.</b>",
@@ -88,6 +93,7 @@
             ],
             options: ["Select", "1 - Very Low", "2 - Low", "3 - Medium", "4 - High", "5 - Very High"],
             predictBtn: "Predict",
+            predicting: "Predicting...",
             trueZodiacLabel: "Select your real zodiac:",
             zodiacOptions: [
                 ["Aries", "Aries"], ["Taurus", "Taurus"], ["Gemini", "Gemini"], ["Cancer", "Cancer"],
@@ -95,6 +101,7 @@
                 ["Sagittarius", "Sagittarius"], ["Capricorn", "Capricorn"], ["Aquarius", "Aquarius"], ["Pisces", "Pisces"]
             ],
             saveBtn: "Save Data",
+            saving: "Saving...",
             resultSuccess: "<b>Thank you! Your data has been saved.</b>",
             resultError: "<b>An error occurred. Please try again.</b>",
             resultServer: "<b>Cannot reach server.</b>",
@@ -168,6 +175,11 @@
     // Tahmin butonuna basınca özellikleri topla ve /predict_all endpointine gönder
     document.addEventListener('click', async function(e) {
         if (e.target && e.target.id === 'predictBtn') {
+            const btn = e.target;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = LANG[currentLang].predicting + '<span class="loading"></span>';
+            
             const form = document.getElementById('zodiacForm');
             const data = {};
             for (const key in FEATURE_KEYS) {
@@ -204,9 +216,13 @@
                     form.dataset.knn = result.knn || '';
                 } else {
                     document.getElementById('result').innerHTML = LANG[currentLang].resultError;
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
                 }
             } catch (err) {
                 document.getElementById('result').innerHTML = LANG[currentLang].resultServer;
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
     });
@@ -215,6 +231,13 @@
     document.getElementById('zodiacForm').onsubmit = async function(e) {
         e.preventDefault();
         const form = e.target;
+        const saveBtn = document.getElementById('saveBtn');
+        const originalText = saveBtn.innerHTML;
+        
+        // Butonu devre dışı bırak ve yükleniyor göster
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = LANG[currentLang].saving + '<span class="loading"></span>';
+        
         const data = {};
         for (const key in FEATURE_KEYS) {
             data[key] = parseInt(form[key].value);
@@ -234,9 +257,13 @@
                 document.getElementById('step2').style.display = 'none';
             } else {
                 document.getElementById('result').innerHTML = LANG[currentLang].resultError;
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
             }
         } catch (err) {
             document.getElementById('result').innerHTML = LANG[currentLang].resultServer;
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalText;
         }
     };
     </script>
