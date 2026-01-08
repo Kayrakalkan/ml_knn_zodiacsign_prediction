@@ -1,5 +1,9 @@
 Flask
 flask-cors
 pandas
+numpy
 scikit-learn
 joblib
+pymongo
+python-dotenv
+gunicorn

@@ -1,0 +1,10 @@
+```
+# ...existing code...
+.env
+.venv/
+__pycache__/
+*.pyc
+*.pkl
+*.joblib
+# ...existing code...
+```
