@@ -186,9 +186,17 @@
                     // Show all model predictions (top-1 only)
                     let html = '';
                     const q = LANG[currentLang];
-                    html += `<b>${q.modelA}:</b> ${result.logistic ? result.logistic : q.modelNone}<br>`;
-                    html += `<b>${q.modelB}:</b> ${result.rf ? result.rf : q.modelNone}<br>`;
-                    html += `<b>${q.modelC}:</b> ${result.knn ? result.knn : q.modelNone}<br>`;
+                    
+                    // Burç çevirisi için yardımcı fonksiyon
+                    function translateZodiac(zodiacEn) {
+                        if (!zodiacEn) return q.modelNone;
+                        const zodiacMap = Object.fromEntries(q.zodiacOptions);
+                        return zodiacMap[zodiacEn] || zodiacEn;
+                    }
+                    
+                    html += `<b>${q.modelA}:</b> ${translateZodiac(result.logistic)}<br>`;
+                    html += `<b>${q.modelB}:</b> ${translateZodiac(result.rf)}<br>`;
+                    html += `<b>${q.modelC}:</b> ${translateZodiac(result.knn)}<br>`;
                     document.getElementById('predictionResult').innerHTML = html;
                     // Store predictions for submit
                     form.dataset.logistic = result.logistic || '';
